@@ -8,15 +8,9 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders import UnstructuredURLLoader
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings, HuggingFaceEndpoint
 
 from dotenv import load_dotenv
 load_dotenv()
-
-llm = HuggingFaceEndpoint(
-    repo_id="google/gemma-2-2b-it",
-    task="text-generation"
-)
 
 st.title("News Research Tool 📈")
 st.sidebar.title("News Article URLs")
@@ -31,6 +25,7 @@ process_url_clicked = st.sidebar.button("Process URLs")
 file_path = "faiss_store_openai.pkl"
 
 main_placeholder = st.empty()
+llm = OpenAI(temperature=0.9, max_tokens=500)
 
 if process_url_clicked:
     #load data
@@ -45,14 +40,14 @@ if process_url_clicked:
     main_placeholder.text("Text Splitter...Started...✅✅✅")
     docs = text_splitter.split_documents(data)
     #create embeddings and save it to FAISS index
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    vectorstore = FAISS.from_documents(docs, embeddings)
+    embeddings = OpenAIEmbeddings()
+    vectorstore_openai = FAISS.from_documents(docs, embeddings)
     main_placeholder.text("Embedding Vector Started Building...✅✅✅")
     time.sleep(2)
 
     #save the FAISS index to a pickle file
     with open(file_path, "wb") as f:
-        pickle.dump(vectorstore, f)
+        pickle.dump(vectorstore_openai, f)
 
 query = main_placeholder.text_input("Question: ")
 if query:
